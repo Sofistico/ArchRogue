@@ -1,16 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RLNET;
+﻿using RLNET;
 using RogueSharp;
+using System;
+using System.Collections.Generic;
+using ArchRogue.Systems;
 
 namespace ArchRogue.Core
 {
     // Our custom DungeonMap class extends the base RogueSharp Map class
     public class DungeonMap : Map
     {
+        //Generate rooms
+        public List<Rectangle> Rooms;
+
+        public DungeonMap()
+        {
+            Rooms = new List<Rectangle>();
+        }
+
         // The Draw method will be called each time the map is updated
         // It will render all of the symbols/colors for each cell to the map sub console
         public void Draw(RLConsole mapConsole)
@@ -56,6 +62,60 @@ namespace ArchRogue.Core
                     console.Set(cell.X, cell.Y, Colors.Wall, Colors.WallBackground, '#');
                 }
             }
+        }
+
+        // This method will be called any time we move the player to update field-of-view
+        public void UpdatePlayerFieldOfView()
+        {
+            Player player = Game.Player;
+            // Compute the field-of-view based on the player's location and awareness
+            ComputeFov(player.X, player.Y, player.Awareness, true);
+            // Mark all cells in field-of-view as having been explored
+            foreach(Cell cell in GetAllCells())
+            {
+                if (IsInFov(cell.X, cell.Y))
+                {
+                    SetCellProperties(cell.X, cell.Y, cell.IsTransparent, cell.IsWalkable, true);
+                }
+            }
+
+        }
+        // Returns true when able to place the Actor on the cell or false otherwise
+        public bool SetActorPosition(Actor actor, int x, int y)
+        {
+            // Only allow actor placement if the cell is walkable
+            if(GetCell(x, y).IsWalkable)
+            {
+                // The cell the actor was previously on is now walkable
+                SetIsWalkable(actor.X, actor.Y, true);
+                //Update actor position
+                actor.X = x;
+                actor.Y = y;
+                //The new cell the actor is on is now unwalkable
+                SetIsWalkable(actor.X, actor.Y, false);
+                //Update the field of view of the player after walking
+                if(actor is Player)
+                {
+                    UpdatePlayerFieldOfView();
+                }
+                return true;
+            }
+            return false;
+        }
+
+        //A helper method for setting the IsWalkable property on a Cell
+        public void SetIsWalkable(int x, int y, bool IsWalkable)
+        {
+            Cell cell = (Cell)GetCell(x, y);
+            SetCellProperties(cell.X, cell.Y, cell.IsTransparent, IsWalkable, cell.IsExplored);
+        }
+
+        // Sets the player position so that the MapGenerator can call it
+        public void AddPlayer(Player player)
+        {
+            Game.Player = player;
+            SetIsWalkable(player.X, player.Y, false);
+            UpdatePlayerFieldOfView();
         }
     }
 }

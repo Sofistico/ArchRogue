@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RLNET;
-using RogueSharp;
+﻿using RLNET;
 using ArchRogue.Core;
 using ArchRogue.Systems;
-
+using RogueSharp.Random;
+using System;
 
 namespace ArchRogue
 {
@@ -39,15 +34,28 @@ namespace ArchRogue
         private static readonly int _inventoryHeight = 11;
         private static RLConsole _inventoryConsole;
 
-        //Sets maps
+        //Sets maps and player
+        public static Player Player { get; set; }
         public static DungeonMap DungeonMap { get; private set; }
+
+        //Command keys
+        private static bool _renderRequired = true;
+        public static CommandSystem CommandSystem { get; private set; }
+
+        //Setting the seed and random things
+        public static IRandom Random { get; private set; }
 
         public static void Main()
         {
+            //Setting the seed on base with the system time
+            int seed = (int)DateTime.UtcNow.Ticks;
+            Random = new DotNetRandom(seed);
+
             // This must be the exact name of the bitmap font file we are using or it will error.
             string fontFileName = "terminal8x8.png";
-            // The title will appear at the top of the console window
-            string consoleTitle = "RogueSharp V3 Tutorial - Level 1";
+            // The title will appear at the top of the console 
+            //Also include the seed code in the title
+            string consoleTitle = $"ArchRogue - Level 1 - Seed {seed}";
             // Tell RLNet to use the bitmap font that we specified and that each tile is 8 x 8 pixels
             _rootConsole = new RLRootConsole(fontFileName, _screenWidth, _screenHeight,
               8, 8, 1f, consoleTitle);
@@ -57,24 +65,18 @@ namespace ArchRogue
             _statConsole = new RLConsole(_statWidth, _statHeight);
             _inventoryConsole = new RLConsole(_inventoryWidth, _inventoryHeight);
             //Sets maps generator
-            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight);
+            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7);
             DungeonMap = mapGenerator.CreateMap();
+            //Updater field of view
+            DungeonMap.UpdatePlayerFieldOfView();
+            //Command setting in main
+            CommandSystem = new CommandSystem();
+
             // Set up a handler for RLNET's Update event
             _rootConsole.Update += OnRootConsoleUpdate;
             // Set up a handler for RLNET's Render event
             _rootConsole.Render += OnRootConsoleRender;
-            // Begin RLNET's game loop
-            _rootConsole.Run();
-        }
-
-        // Event handler for RLNET's Update event
-        private static void OnRootConsoleUpdate(object sender, UpdateEventArgs e)
-        {
             // Set background color and text for each console 
-            // so that we can verify they are in the correct positions
-            _mapConsole.SetBackColor(0, 0, _mapWidth, _mapHeight, Colors.FloorBackground);
-            _mapConsole.Print(1, 1, "Map", Colors.TextHeading);
-
             _messageConsole.SetBackColor(0, 0, _messageWidth, _messageHeight, Palette.DbDeepWater);
             _messageConsole.Print(1, 1, "Messages", Colors.TextHeading);
 
@@ -83,19 +85,84 @@ namespace ArchRogue
 
             _inventoryConsole.SetBackColor(0, 0, _inventoryWidth, _inventoryHeight, Palette.DbWood);
             _inventoryConsole.Print(1, 1, "Inventory", Colors.TextHeading);
+            // Begin RLNET's game loop
+            _rootConsole.Run();
         }
+
+        // Event handler for RLNET's Update event
+        private static void OnRootConsoleUpdate(object sender, UpdateEventArgs e)
+        {
+            bool didPlayerAct = false;
+            RLKeyPress keyPress = _rootConsole.Keyboard.GetKeyPress();
+
+            if(keyPress != null)
+            {
+                if (keyPress.Key == RLKey.Keypad8)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.Up);
+                }
+                else if (keyPress.Key == RLKey.Keypad2)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.Down);
+                }
+                else if (keyPress.Key == RLKey.Keypad4)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.Left);
+                }
+                else if (keyPress.Key == RLKey.Keypad6)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.Right);
+                }
+                else if(keyPress.Key == RLKey.Keypad1)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.DownLeft);
+                }
+                else if (keyPress.Key == RLKey.Keypad3)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.DownRight);
+                }
+                else if (keyPress.Key == RLKey.Keypad7)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.UpLeft);
+                }
+                else if (keyPress.Key == RLKey.Keypad9)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.UpRight);
+                }
+                //To create a wait command later.
+                //else if (keyPress.Key == RLKey.Keypad5)
+
+                else if (keyPress.Key == RLKey.Escape)
+                {
+                    _rootConsole.Close();
+                }
+            }
+            if (didPlayerAct)
+            {
+                _renderRequired = true;
+            }
+        
+        }
+        
         // Event handler for RLNET's Render event
         private static void OnRootConsoleRender(object sender, UpdateEventArgs e)
         {
-            //Render map
-            DungeonMap.Draw(_mapConsole);
-            //Tell RLNET wheere to blit the consoles
-            RLConsole.Blit(_mapConsole, 0, 0, _mapWidth, _mapHeight, _rootConsole, 0, _inventoryHeight);
-            RLConsole.Blit(_statConsole, 0, 0, _statWidth, _statHeight, _rootConsole, _mapWidth, 0);
-            RLConsole.Blit(_messageConsole, 0, 0, _messageWidth, _messageHeight, _rootConsole, 0, _screenHeight - _messageHeight);
-            RLConsole.Blit(_inventoryConsole, 0, 0, _inventoryWidth, _inventoryHeight, _rootConsole, 0, 0);
-            // Tell RLNET to draw the console that we set
-            _rootConsole.Draw();
+            //Don't bother redrawing all of the consoles if nothing has changed.
+            if (_renderRequired)
+            {
+                //Render map and player
+                DungeonMap.Draw(_mapConsole);
+                Player.Draw(_mapConsole, DungeonMap);
+                //Tell RLNET wheere to blit the consoles
+                RLConsole.Blit(_mapConsole, 0, 0, _mapWidth, _mapHeight, _rootConsole, 0, _inventoryHeight);
+                RLConsole.Blit(_messageConsole, 0, 0, _messageWidth, _messageHeight, _rootConsole, 0, _screenHeight - _messageHeight);
+                RLConsole.Blit(_statConsole, 0, 0, _statWidth, _statHeight, _rootConsole, _mapWidth, 0);
+                RLConsole.Blit(_inventoryConsole, 0, 0, _inventoryWidth, _inventoryHeight, _rootConsole, 0, 0);
+                // Tell RLNET to draw the console that we set
+                _rootConsole.Draw();
+
+                _renderRequired = false;
+            }           
         }
     }    
 }

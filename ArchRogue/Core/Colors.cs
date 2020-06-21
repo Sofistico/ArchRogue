@@ -1,9 +1,4 @@
 ﻿using RLNET;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArchRogue.Core
 {
@@ -20,6 +15,7 @@ namespace ArchRogue.Core
         public static RLColor WallFov = Palette.SecondaryLighter;
 
         public static RLColor TextHeading = Palette.DbLight;
+        public static RLColor Player = Palette.DbLight;
 
     }
 }
