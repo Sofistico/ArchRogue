@@ -80,9 +80,6 @@ namespace ArchRogue
             _messageConsole.SetBackColor(0, 0, _messageWidth, _messageHeight, Palette.DbDeepWater);
             _messageConsole.Print(1, 1, "Messages", Colors.TextHeading);
 
-            _statConsole.SetBackColor(0, 0, _statWidth, _statHeight, Palette.DbOldStone);
-            _statConsole.Print(1, 1, "Stats", Colors.TextHeading);
-
             _inventoryConsole.SetBackColor(0, 0, _inventoryWidth, _inventoryHeight, Palette.DbWood);
             _inventoryConsole.Print(1, 1, "Inventory", Colors.TextHeading);
             // Begin RLNET's game loop
@@ -153,6 +150,7 @@ namespace ArchRogue
                 //Render map and player
                 DungeonMap.Draw(_mapConsole);
                 Player.Draw(_mapConsole, DungeonMap);
+                Player.DrawStats(_statConsole);
                 //Tell RLNET wheere to blit the consoles
                 RLConsole.Blit(_mapConsole, 0, 0, _mapWidth, _mapHeight, _rootConsole, 0, _inventoryHeight);
                 RLConsole.Blit(_messageConsole, 0, 0, _messageWidth, _messageHeight, _rootConsole, 0, _screenHeight - _messageHeight);
