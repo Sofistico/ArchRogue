@@ -1,9 +1,7 @@
 ﻿using RLNET;
 using RogueSharp;
-using System;
 using System.Collections.Generic;
-using ArchRogue.Systems;
-using System.Runtime.Remoting.Messaging;
+using System.Linq;
 
 namespace ArchRogue.Core
 {
@@ -25,17 +23,26 @@ namespace ArchRogue.Core
 
         // The Draw method will be called each time the map is updated
         // It will render all of the symbols/colors for each cell to the map sub console
-        public void Draw(RLConsole mapConsole)
+        public void Draw(RLConsole mapConsole,RLConsole statConsole)
         {
-            mapConsole.Clear();
             foreach (Cell cell in GetAllCells())
             {
                 SetConsoleSymbolForCell(mapConsole, cell);
             }
+
+            // Keep an index so we know which position to draw monster stats at
+            int i = 0;
             // Iterate through each monster on the map and draw it after drawing the Cells
-            foreach(Monster monster in _monsters)
+            foreach (Monster monster in _monsters)
             {
                 monster.Draw(mapConsole, this);
+                // When the monster is in the field-of-view also draw their stats
+                if (IsInFov(monster.X, monster.Y))
+                {
+                    // Pass in the index to DrawStats and increment it afterwards
+                    monster.DrawStats(statConsole, i);
+                    i++;
+                }
             }
         }
 
@@ -91,6 +98,7 @@ namespace ArchRogue.Core
             }
 
         }
+
         // Returns true when able to place the Actor on the cell or false otherwise
         public bool SetActorPosition(Actor actor, int x, int y)
         {
@@ -113,12 +121,14 @@ namespace ArchRogue.Core
             }
             return false;
         }
+
         //A helper method for setting the IsWalkable property on a Cell
         public void SetIsWalkable(int x, int y, bool IsWalkable)
         {
             Cell cell = (Cell)GetCell(x, y);
             SetCellProperties(cell.X, cell.Y, cell.IsTransparent, IsWalkable, cell.IsExplored);
         }
+
         // Sets the player position so that the MapGenerator can call it
         public void AddPlayer(Player player)
         {
@@ -126,12 +136,29 @@ namespace ArchRogue.Core
             SetIsWalkable(player.X, player.Y, false);
             UpdatePlayerFieldOfView();
         }
+
         public void AddMonster(Monster monster)
         {
             _monsters.Add(monster);
             // After adding the monster to the map make sure to make the cell not walkable
             SetIsWalkable(monster.X, monster.Y, false);
         }
+
+        //Method to remove monster from dungeon
+        public void RemoveMonster(Monster monster)
+        {
+            _monsters.Remove(monster);
+            //after removing monster from map, make sure the cell is walkable again
+            SetIsWalkable(monster.X, monster.Y, true);
+
+        }
+
+        //Helper method to get monster
+        public Monster GetMonsterAt(int x, int y)
+        {
+            return _monsters.FirstOrDefault(m => m.X == x && m.Y == y);
+        }
+
         // Look for a random location in the room that is walkable.
         public Point GetRandomWalkableLocationInRoom(Rectangle room)
         {
@@ -149,8 +176,9 @@ namespace ArchRogue.Core
             }
 
             // If we didn't find a walkable location in the room return null
-            return default(Point);
+            return default;
         }
+
         // Iterate through each Cell in the room and return true if any are walkable
         public bool DoesRoomHaveWalkableSpace(Rectangle room)
         {
@@ -166,6 +194,5 @@ namespace ArchRogue.Core
             }
             return false;
         }
-
     }
 }

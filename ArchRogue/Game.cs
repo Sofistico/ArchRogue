@@ -38,6 +38,9 @@ namespace ArchRogue
         public static Player Player { get; set; }
         public static DungeonMap DungeonMap { get; private set; }
 
+        //Setting the message log
+        public static MessageLog MessageLog { get; private set; }
+
         //Command keys
         private static bool _renderRequired = true;
         public static CommandSystem CommandSystem { get; private set; }
@@ -53,35 +56,50 @@ namespace ArchRogue
 
             // This must be the exact name of the bitmap font file we are using or it will error.
             string fontFileName = "terminal8x8.png";
+
             // The title will appear at the top of the console 
             //Also include the seed code in the title
             string consoleTitle = $"ArchRogue - Level 1 - Seed {seed}";
+
             // Tell RLNet to use the bitmap font that we specified and that each tile is 8 x 8 pixels
             _rootConsole = new RLRootConsole(fontFileName, _screenWidth, _screenHeight,
               8, 8, 1f, consoleTitle);
+
+            // Create a new MessageLog and print the random seed used to generate the level
+
+            MessageLog = new MessageLog();
+            MessageLog.Add("The rogue arrives on level 1");
+            MessageLog.Add($"Level created with seed '{seed}'");
+
             //Initialize the sub consoles that we will Blit to the root console
             _mapConsole = new RLConsole(_mapWidth, _mapHeight);
             _messageConsole = new RLConsole(_messageWidth, _messageHeight);
             _statConsole = new RLConsole(_statWidth, _statHeight);
             _inventoryConsole = new RLConsole(_inventoryWidth, _inventoryHeight);
+
             //Sets maps generator
             MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7);
             DungeonMap = mapGenerator.CreateMap();
+
             //Updater field of view
             DungeonMap.UpdatePlayerFieldOfView();
+
             //Command setting in main
             CommandSystem = new CommandSystem();
 
             // Set up a handler for RLNET's Update event
             _rootConsole.Update += OnRootConsoleUpdate;
+
             // Set up a handler for RLNET's Render event
             _rootConsole.Render += OnRootConsoleRender;
+
             // Set background color and text for each console 
             _messageConsole.SetBackColor(0, 0, _messageWidth, _messageHeight, Palette.DbDeepWater);
             _messageConsole.Print(1, 1, "Messages", Colors.TextHeading);
 
             _inventoryConsole.SetBackColor(0, 0, _inventoryWidth, _inventoryHeight, Palette.DbWood);
             _inventoryConsole.Print(1, 1, "Inventory", Colors.TextHeading);
+
             // Begin RLNET's game loop
             _rootConsole.Run();
         }
@@ -134,6 +152,7 @@ namespace ArchRogue
                     _rootConsole.Close();
                 }
             }
+
             if (didPlayerAct)
             {
                 _renderRequired = true;
@@ -147,15 +166,22 @@ namespace ArchRogue
             //Don't bother redrawing all of the consoles if nothing has changed.
             if (_renderRequired)
             {
+                _mapConsole.Clear();
+                _statConsole.Clear();
+                _messageConsole.Clear();
+
                 //Render map and player
-                DungeonMap.Draw(_mapConsole);
+                DungeonMap.Draw(_mapConsole, _statConsole);
                 Player.Draw(_mapConsole, DungeonMap);
                 Player.DrawStats(_statConsole);
+                MessageLog.Draw(_messageConsole);
+
                 //Tell RLNET wheere to blit the consoles
                 RLConsole.Blit(_mapConsole, 0, 0, _mapWidth, _mapHeight, _rootConsole, 0, _inventoryHeight);
                 RLConsole.Blit(_messageConsole, 0, 0, _messageWidth, _messageHeight, _rootConsole, 0, _screenHeight - _messageHeight);
                 RLConsole.Blit(_statConsole, 0, 0, _statWidth, _statHeight, _rootConsole, _mapWidth, 0);
                 RLConsole.Blit(_inventoryConsole, 0, 0, _inventoryWidth, _inventoryHeight, _rootConsole, 0, 0);
+
                 // Tell RLNET to draw the console that we set
                 _rootConsole.Draw();
 
