@@ -67,6 +67,11 @@ namespace ArchRogue.Systems
                         y = Game.Player.Y - 1;
                         break;
                     }
+                case Direction.Center:
+                    {
+                        break;
+                    }
+
                 default:
                     {
                         return false;
@@ -87,6 +92,11 @@ namespace ArchRogue.Systems
             }
 
             return false;
+        }
+
+        public void EndPlayerTurn()
+        {
+            IsPlayerTurn = false;
         }
 
         public void Attack(Actor attacker, Actor defender)
@@ -172,7 +182,7 @@ namespace ArchRogue.Systems
         {
             if(damage > 0)
             {
-                defender.Health = defender.Health - damage;
+                defender.Health -= damage;
 
                 Game.MessageLog.Add($"  {defender.Name} was hit for {damage} damage");
 
@@ -200,12 +210,7 @@ namespace ArchRogue.Systems
                 Game.DungeonMap.RemoveMonster((Monster)defender);
                 Game.MessageLog.Add($"  {defender.Name} died and dropped {defender.Gold} gold");
             }
-        }
-
-        public void EndPlayerTurn()
-        {
-            IsPlayerTurn = false;
-        }
+        }       
 
         public void ActivateMonsters()
         {
@@ -217,14 +222,11 @@ namespace ArchRogue.Systems
             }
             else
             {
-                Monster monster = scheduleable as Monster;
-
-                if (monster != null)
+                if (scheduleable is Monster monster)
                 {
                     monster.PerformAction(this);
                     Game.SchedulingSystem.Add(monster);
                 }
-
                 ActivateMonsters();
             }
         }
