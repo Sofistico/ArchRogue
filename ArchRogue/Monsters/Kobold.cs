@@ -1,10 +1,5 @@
 ﻿using ArchRogue.Core;
 using RogueSharp.DiceNotation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArchRogue.Monsters
 {
@@ -26,7 +21,15 @@ namespace ArchRogue.Monsters
                 MaxHealth = health,
                 Name = "Kobold",
                 Speed = 14,
-                Symbol = 'k'
+                Symbol = 'k',
+                Head = 1,
+                Neck = 1,
+                Torso = 1,
+                Waist = 1,
+                L_Leg = 1,
+                R_Leg = 1,
+                L_Arm = 1,
+                R_Arm = 1
             };
         }
     }

@@ -198,5 +198,12 @@ namespace ArchRogue.Core
             }
             return false;
         }
+
+        //Create a method to place a player into a room without monsters in there
+        /*public bool StarterRoom(Player player)
+        {
+            player = Game.Player;
+      
+        }*/
     }
 }

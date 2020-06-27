@@ -1,5 +1,5 @@
 ﻿using RLNET;
-using ArchRogue;
+using ArchRogue.Systems;
 
 namespace ArchRogue.Core
 {
@@ -23,6 +23,7 @@ namespace ArchRogue.Core
             Symbol = '@';
             X = 10;
             Y = 10;
+            HumanoidBody();
         }
         public void DrawStats(RLConsole statConsole)
         {

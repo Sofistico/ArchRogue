@@ -4,7 +4,7 @@ using RogueSharp;
 
 namespace ArchRogue.Core
 {
-    public class Actor : IActor, IDrawable, IScheduleable
+    public class Actor : IActor, IDrawable, IScheduleable, IBody
     {
         //IActor
         private int _attack;
@@ -197,6 +197,119 @@ namespace ArchRogue.Core
             {
                 return Speed;
             }
+        }
+
+        //IBody
+
+        private int _head;
+        private int _neck;
+        private int _torso;
+        private int _waist;
+        private int _rleg;
+        private int _lleg;
+        private int _rarm;
+        private int _larm;
+
+        public int Head
+        {
+            get
+            {
+                return _head;
+            }
+            set
+            {
+                _head = value;
+            }
+        }
+        public int Neck
+        {
+            get
+            {
+                return _neck;
+            }
+            set
+            {
+                _neck = value;
+            }
+        }
+        public int Torso
+        {
+            get
+            {
+                return _torso;
+            }
+            set
+            {
+                _torso = value;
+            }
+        }
+        public int Waist
+        {
+            get
+            {
+                return _waist;
+            }
+            set
+            {
+                _waist = value;
+            }
+        }
+        public int R_Leg
+        {
+            get
+            {
+                return _rleg;
+            }
+            set
+            {
+                _rleg = value;
+            }
+        }
+        public int L_Leg
+        {
+            get
+            {
+                return _lleg;
+            }
+            set
+            {
+                _lleg = value;
+            }
+        }
+        public int R_Arm
+        {
+            get
+            {
+                return _rarm;
+            }
+            set
+            {
+                _rarm = value;
+            }
+        }
+        public int L_Arm
+        {
+            get
+            {
+                return _larm;
+            }
+            set
+            {
+                _larm = value;
+            }
+        }
+
+        //Method that gives a human a humanoid body
+        public void HumanoidBody()
+        {
+            Head = 1;
+            Neck = 1;
+            Torso = 1;
+            Waist = 1;
+            L_Leg = 1;
+            R_Leg = 1;
+            L_Arm = 1;
+            R_Arm = 1;
         }
     }
 }

@@ -129,9 +129,11 @@ namespace ArchRogue.Systems
         //This method places player on a valid tile, which is on the first room created
         private void PlacePlayer()
         {
+            //Add a method to not place a player into a room with monsters
             Player player = Game.Player;
+
             if (player == null)
-            {
+            {                
                 player = new Player();
             }
 
@@ -163,7 +165,7 @@ namespace ArchRogue.Systems
                             monster.X = randomRoomLocation.X;
                             monster.Y = randomRoomLocation.Y;
                             _map.AddMonster(monster);
-                        }
+                        }                                            
                     }
                 }
             }
