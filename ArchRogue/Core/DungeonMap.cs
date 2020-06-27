@@ -1,4 +1,5 @@
-﻿using RLNET;
+﻿using OpenTK;
+using RLNET;
 using RogueSharp;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,9 @@ namespace ArchRogue.Core
         //Generate rooms
         public List<Rectangle> Rooms;
 
+        //Doors
+        public List<Door> Doors { get; set; }
+
         //Adds monsters to read
         private readonly List<Monster> _monsters;
 
@@ -19,6 +23,7 @@ namespace ArchRogue.Core
             Rooms = new List<Rectangle>();
             //Initilize the lists for our map
             _monsters = new List<Monster>();
+            Doors = new List<Door>();
         }
 
         // The Draw method will be called each time the map is updated
@@ -43,6 +48,11 @@ namespace ArchRogue.Core
                     monster.DrawStats(statConsole, i);
                     i++;
                 }
+            }
+
+            foreach(Door door in Doors)
+            {
+                door.Draw(mapConsole, this);
             }
         }
 
@@ -112,8 +122,12 @@ namespace ArchRogue.Core
                 actor.Y = y;
                 //The new cell the actor is on is now unwalkable
                 SetIsWalkable(actor.X, actor.Y, false);
+
+                // Try to open a door if one exists here
+                OpenDoor(actor, x, y);
+
                 //Update the field of view of the player after walking
-                if(actor is Player)
+                if (actor is Player)
                 {
                     UpdatePlayerFieldOfView();
                 }
@@ -205,5 +219,37 @@ namespace ArchRogue.Core
             player = Game.Player;
       
         }*/
+
+        // Return the door at the x,y position or null if one is not found.
+        public Door GetDoor(int x, int y)
+        {
+            return Doors.SingleOrDefault(d => d.X == x && d.Y == y);
+        }
+
+        // The actor opens the door located at the x,y position
+        private void OpenDoor(Actor actor, int x, int y)
+        {
+            Door door = GetDoor(x, y);
+            if (door != null && !door.IsOpen)
+            {
+                door.IsOpen = true;
+                var cell = GetCell(x, y);
+                // Once the door is opened it should be marked as transparent and no longer block field-of-view
+                SetCellProperties(x, y, true, cell.IsWalkable, cell.IsExplored);
+            }
+        }
+
+        //Create a method to close the door by pressing a key
+        private void CloseDoor (Actor actor, int x, int y)
+        {
+            Door door = GetDoor(x, y);
+            if (door != null && door.IsOpen)
+            {
+                door.IsOpen = false;
+                var cell = GetCell(x, y);
+                //Once the door is closed, it should return as transparent
+                SetCellProperties(x, y, false, cell.IsWalkable, cell.IsExplored);
+            }
+        }
     }
 }
