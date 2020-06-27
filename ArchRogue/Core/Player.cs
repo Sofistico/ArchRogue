@@ -19,10 +19,10 @@ namespace ArchRogue.Core
             Defense = 2;
             DefenseChance = 40;
             Gold = 0;
-            Health = 100;
-            MaxHealth = 100;
-            MaxMana = 100;
-            Mana = 100;
+            Health = 10;
+            MaxHealth = 10;
+            MaxMana = 10;
+            Mana = 10;
             Name = "Arch";
             Speed = 10;
             Symbol = '@';

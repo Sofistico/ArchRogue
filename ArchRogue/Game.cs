@@ -45,6 +45,9 @@ namespace ArchRogue
         private static bool _renderRequired = true;
         public static CommandSystem CommandSystem { get; private set; }
 
+        //Time system
+        public static SchedulingSystem SchedulingSystem { get; private set; }
+
         //Setting the seed and random things
         public static IRandom Random { get; private set; }
 
@@ -76,6 +79,9 @@ namespace ArchRogue
             _messageConsole = new RLConsole(_messageWidth, _messageHeight);
             _statConsole = new RLConsole(_statWidth, _statHeight);
             _inventoryConsole = new RLConsole(_inventoryWidth, _inventoryHeight);
+
+            //Instantiete a new Schedule system
+            SchedulingSystem = new SchedulingSystem();
 
             //Sets maps generator
             MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7);
@@ -110,56 +116,66 @@ namespace ArchRogue
             bool didPlayerAct = false;
             RLKeyPress keyPress = _rootConsole.Keyboard.GetKeyPress();
 
-            if(keyPress != null)
+            if (CommandSystem.IsPlayerTurn)
             {
-                if (keyPress.Key == RLKey.Keypad8)
+                if (keyPress != null)
                 {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.Up);
-                }
-                else if (keyPress.Key == RLKey.Keypad2)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.Down);
-                }
-                else if (keyPress.Key == RLKey.Keypad4)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.Left);
-                }
-                else if (keyPress.Key == RLKey.Keypad6)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.Right);
-                }
-                else if(keyPress.Key == RLKey.Keypad1)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.DownLeft);
-                }
-                else if (keyPress.Key == RLKey.Keypad3)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.DownRight);
-                }
-                else if (keyPress.Key == RLKey.Keypad7)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.UpLeft);
-                }
-                else if (keyPress.Key == RLKey.Keypad9)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.UpRight);
-                }
-                //To create a wait command later.
-                //else if (keyPress.Key == RLKey.Keypad5)
+                    if (keyPress.Key == RLKey.Keypad8)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Up);
+                    }
+                    else if (keyPress.Key == RLKey.Keypad2)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Down);
+                    }
+                    else if (keyPress.Key == RLKey.Keypad4)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Left);
+                    }
+                    else if (keyPress.Key == RLKey.Keypad6)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Right);
+                    }
+                    else if (keyPress.Key == RLKey.Keypad1)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.DownLeft);
+                    }
+                    else if (keyPress.Key == RLKey.Keypad3)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.DownRight);
+                    }
+                    else if (keyPress.Key == RLKey.Keypad7)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.UpLeft);
+                    }
+                    else if (keyPress.Key == RLKey.Keypad9)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.UpRight);
+                    }
 
-                else if (keyPress.Key == RLKey.Escape)
-                {
-                    _rootConsole.Close();
-                }
+                    //To create a wait command later.
+                    //else if (keyPress.Key == RLKey.Keypad5)
+
+                    else if (keyPress.Key == RLKey.Escape)
+                    {
+                        _rootConsole.Close();
+                    }
+                }            
             }
 
             if (didPlayerAct)
             {
                 _renderRequired = true;
+                CommandSystem.EndPlayerTurn();
             }
-        
+
+            else
+            {
+                CommandSystem.ActivateMonsters();
+                _renderRequired = true;
+            }
         }
-        
+
         // Event handler for RLNET's Render event
         private static void OnRootConsoleRender(object sender, UpdateEventArgs e)
         {

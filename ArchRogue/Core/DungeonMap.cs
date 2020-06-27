@@ -135,6 +135,7 @@ namespace ArchRogue.Core
             Game.Player = player;
             SetIsWalkable(player.X, player.Y, false);
             UpdatePlayerFieldOfView();
+            Game.SchedulingSystem.Add( player );
         }
 
         public void AddMonster(Monster monster)
@@ -142,6 +143,8 @@ namespace ArchRogue.Core
             _monsters.Add(monster);
             // After adding the monster to the map make sure to make the cell not walkable
             SetIsWalkable(monster.X, monster.Y, false);
+            Game.SchedulingSystem.Add(monster);
+
         }
 
         //Method to remove monster from dungeon
@@ -150,6 +153,7 @@ namespace ArchRogue.Core
             _monsters.Remove(monster);
             //after removing monster from map, make sure the cell is walkable again
             SetIsWalkable(monster.X, monster.Y, true);
+            Game.SchedulingSystem.Remove(monster);
 
         }
 

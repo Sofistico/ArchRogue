@@ -1,4 +1,6 @@
 ﻿using ArchRogue.Core;
+using ArchRogue.Interface;
+using RogueSharp;
 using RogueSharp.DiceNotation;
 using System;
 using System.Collections.Generic;
@@ -10,6 +12,8 @@ namespace ArchRogue.Systems
 {
     public class CommandSystem
     {
+        public bool IsPlayerTurn { get; set; }       
+
         // Return value is true if the player was able to move
         // false when the player couldn't move, such as trying to move into a wall
         public bool MovePlayer(Direction direction)
@@ -103,7 +107,7 @@ namespace ArchRogue.Systems
             int damage = hits - blocks;
 
             ResolveDamage(defender, damage);
-        }
+        }      
 
         // The attacker rolls based on his stats to see if he gets any hits
         private static int ResolveAttack(Actor attacker, Actor defender, StringBuilder attackMessage)
@@ -197,5 +201,45 @@ namespace ArchRogue.Systems
                 Game.MessageLog.Add($"  {defender.Name} died and dropped {defender.Gold} gold");
             }
         }
+
+        public void EndPlayerTurn()
+        {
+            IsPlayerTurn = false;
+        }
+
+        public void ActivateMonsters()
+        {
+            IScheduleable scheduleable = Game.SchedulingSystem.Get();
+            if (scheduleable is Player)
+            {
+                IsPlayerTurn = true;
+                Game.SchedulingSystem.Add(Game.Player);
+            }
+            else
+            {
+                Monster monster = scheduleable as Monster;
+
+                if (monster != null)
+                {
+                    monster.PerformAction(this);
+                    Game.SchedulingSystem.Add(monster);
+                }
+
+                ActivateMonsters();
+            }
+        }
+
+        public void MoveMonster(Monster monster, Cell cell)
+        {
+            if (!Game.DungeonMap.SetActorPosition(monster, cell.X, cell.Y))
+            {
+                if (Game.Player.X == cell.X && Game.Player.Y == cell.Y)
+                {
+                    Attack(monster, Game.Player);
+                }
+            }
+        }
+
     }
+
 }

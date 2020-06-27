@@ -4,7 +4,7 @@ using RogueSharp;
 
 namespace ArchRogue.Core
 {
-    public class Actor : IActor, IDrawable
+    public class Actor : IActor, IDrawable, IScheduleable
     {
         //IActor
         private int _attack;
@@ -166,8 +166,8 @@ namespace ArchRogue.Core
             }
         }
 
-    //IDrawable
-    public RLColor Color { get; set; }
+        //IDrawable
+        public RLColor Color { get; set; }
         public char Symbol { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
@@ -181,12 +181,21 @@ namespace ArchRogue.Core
             // Only draw the actor with the color and symbol when they are in field-of-view
             if (map.IsInFov(X, Y))
             {
-                console.Set(X, Y, Color,Colors.FloorBackgroundFov, Symbol);
+                console.Set(X, Y, Color, Colors.FloorBackgroundFov, Symbol);
             }
             else
             {
                 // When not in field-of-view just draw a normal floor
-                console.Set(X, Y, Color,Colors.FloorBackground, '.');
+                console.Set(X, Y, Color, Colors.FloorBackground, '.');
+            }
+        }
+
+        // IScheduleable
+        public int Time
+        {
+            get
+            {
+                return Speed;
             }
         }
     }

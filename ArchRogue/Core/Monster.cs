@@ -1,4 +1,6 @@
-﻿using RLNET;
+﻿using ArchRogue.Behavior;
+using ArchRogue.Systems;
+using RLNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +11,8 @@ namespace ArchRogue.Core
 {
     public class Monster : Actor
     {
+        public int? TurnsAlerted { get; set; }
+
         public void DrawStats(RLConsole statConsole, int position)
         {
             //Starts at y=13, which is lower than player stats
@@ -28,6 +32,11 @@ namespace ArchRogue.Core
 
             // Print the monsters name over top of the health bar
             statConsole.Print(2, yPosition, $": {Name}", Palette.DbLight);
+        }
+        public virtual void PerformAction(CommandSystem commandSystem)
+        {
+            var behavior = new StandardMoveAndAttack();
+            behavior.Act(this, commandSystem);
         }
     }
 }
