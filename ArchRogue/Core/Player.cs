@@ -1,10 +1,5 @@
 ﻿using RLNET;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ArchRogue.Systems;
+using ArchRogue;
 
 namespace ArchRogue.Core
 {
@@ -24,7 +19,7 @@ namespace ArchRogue.Core
             MaxMana = 10;
             Mana = 10;
             Name = "Arch";
-            Speed = 10;
+            Speed = 15;
             Symbol = '@';
             X = 10;
             Y = 10;

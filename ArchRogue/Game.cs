@@ -51,6 +51,9 @@ namespace ArchRogue
         //Setting the seed and random things
         public static IRandom Random { get; private set; }
 
+        //Setting the char name
+        public static string PlayerName { get; private set; }
+
         public static void Main()
         {
             //Setting the seed on base with the system time
@@ -67,6 +70,11 @@ namespace ArchRogue
             // Tell RLNet to use the bitmap font that we specified and that each tile is 8 x 8 pixels
             _rootConsole = new RLRootConsole(fontFileName, _screenWidth, _screenHeight,
               8, 8, 1f, consoleTitle);
+
+            //Enter name
+            /*_rootConsole.Print(30, 35, "What's yer name, traveler?", RLColor.White);
+            PlayerName = Console.ReadLine();
+            _rootConsole.Print(50, 35, PlayerName, RLColor.White);*/
 
             // Create a new MessageLog and print the random seed used to generate the level
 
@@ -154,20 +162,24 @@ namespace ArchRogue
                     }
 
                     //To create a wait command later.
-                    //else if (keyPress.Key == RLKey.Keypad5)
+                    else if (keyPress.Key == RLKey.Keypad5)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Center);
+                    }
 
                     else if (keyPress.Key == RLKey.Escape)
                     {
                         _rootConsole.Close();
                     }
-                }            
-            }
+                }
 
-            if (didPlayerAct)
-            {
-                _renderRequired = true;
-                CommandSystem.EndPlayerTurn();
-            }
+                if (didPlayerAct)
+                {
+                    _renderRequired = true;
+                    CommandSystem.EndPlayerTurn();
+                }
+
+            }         
 
             else
             {
