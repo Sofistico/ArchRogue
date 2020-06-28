@@ -54,6 +54,8 @@ namespace ArchRogue
         //Setting the char name
         public static string PlayerName { get; private set; }
 
+        private static int _mapLevel = 1;
+
         public static void Main()
         {
             //Setting the seed on base with the system time
@@ -65,7 +67,7 @@ namespace ArchRogue
 
             // The title will appear at the top of the console 
             //Also include the seed code in the title
-            string consoleTitle = $"ArchRogue - Level 1 - Seed {seed}";
+            string consoleTitle = $"RougeSharp V3 Tutorial - Level {_mapLevel} - Seed {seed}";
 
             // Tell RLNet to use the bitmap font that we specified and that each tile is 8 x 8 pixels
             _rootConsole = new RLRootConsole(fontFileName, _screenWidth, _screenHeight,
@@ -92,7 +94,7 @@ namespace ArchRogue
             SchedulingSystem = new SchedulingSystem();
 
             //Sets maps generator
-            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7);
+            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7, _mapLevel);
             DungeonMap = mapGenerator.CreateMap();
 
             //Updater field of view
@@ -170,6 +172,19 @@ namespace ArchRogue
                     else if (keyPress.Key == RLKey.Escape)
                     {
                         _rootConsole.Close();
+                    }
+
+                    else if (keyPress.Key == RLKey.Period)
+                    {
+                        if (DungeonMap.CanMoveDownToNextLevel())
+                        {
+                            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7, ++_mapLevel);
+                            DungeonMap = mapGenerator.CreateMap();
+                            MessageLog = new MessageLog();
+                            CommandSystem = new CommandSystem();
+                            _rootConsole.Title = $"RougeSharp RLNet Tutorial - Level {_mapLevel}";
+                            didPlayerAct = true;
+                        }
                     }
                 }
 

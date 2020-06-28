@@ -67,6 +67,7 @@
     <Compile Include="Core\Palette.cs" />
     <Compile Include="Core\Colors.cs" />
     <Compile Include="Core\Player.cs" />
+    <Compile Include="Core\Stairs.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Interface\IActor.cs" />
     <Compile Include="Interface\IBehavior.cs" />

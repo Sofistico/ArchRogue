@@ -15,11 +15,17 @@ namespace ArchRogue.Core
         //Doors
         public List<Door> Doors { get; set; }
 
+        //Stars up and down
+        public Stairs StairsUp{ get; set; }
+        public Stairs StairsDown{ get; set; }
+
         //Adds monsters to read
         private readonly List<Monster> _monsters;
 
         public DungeonMap()
         {
+            //Clear the monsters to make sure that they will not try to act
+            Game.SchedulingSystem.Clear();
             Rooms = new List<Rectangle>();
             //Initilize the lists for our map
             _monsters = new List<Monster>();
@@ -54,6 +60,10 @@ namespace ArchRogue.Core
             {
                 door.Draw(mapConsole, this);
             }
+
+            // Add the following code after we finish drawing doors.
+            StairsUp.Draw(mapConsole, this);
+            StairsDown.Draw(mapConsole, this);
         }
 
         private void SetConsoleSymbolForCell(RLConsole console, Cell cell)
@@ -251,5 +261,12 @@ namespace ArchRogue.Core
                 SetCellProperties(x, y, false, cell.IsWalkable, cell.IsExplored);
             }
         }
+
+        public bool CanMoveDownToNextLevel()
+        {
+            Player player = Game.Player;
+            return StairsDown.X == player.X && StairsDown.Y == player.Y;
+        }
     }
+
 }
